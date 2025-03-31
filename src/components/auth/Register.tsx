@@ -10,7 +10,7 @@ import {
   Link,
   styled,
 } from '@mui/material';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../../hooks/useAuth';
 
 // Styled components (reusing from Login)
 const GradientBackground = styled(Box)({

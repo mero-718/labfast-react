@@ -1,14 +1,14 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { store } from './store/store';
-import { Login } from './components/Login';
-import { Register } from './components/Register';
-import { Dashboard } from './components/Dashboard';
-import StudentDetail from './pages/StudentDetail';
-import { ProtectedRoute } from './components/ProtectedRoute';
+import { Login } from './components/auth/Login';
+import { Register } from './components/auth/Register';
+import { Dashboard } from './components/dashboard/Dashboard';
+import { ProtectedRoute } from './components/common/ProtectedRoute';
 import { ThemeProvider, createTheme } from '@mui/material';
 import CssBaseline from '@mui/material/CssBaseline';
 import './App.css';
+import  StudentDetail  from './pages/StudentDetail';
 
 // Create a theme instance
 const theme = createTheme({
@@ -85,7 +85,7 @@ const App = () => {
                 </ProtectedRoute>
               }
             />
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/" element={<Navigate to="/login" replace />} />
           </Routes>
         </Router>
       </ThemeProvider>

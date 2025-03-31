@@ -12,7 +12,7 @@ import {
   CircularProgress,
   Alert,
 } from '@mui/material';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../../hooks/useAuth';
 
 // Styled components
 const GradientBackground = styled(Box)({
