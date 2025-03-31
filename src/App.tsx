@@ -4,6 +4,7 @@ import { store } from './store/store';
 import { Login } from './components/Login';
 import { Register } from './components/Register';
 import { Dashboard } from './components/Dashboard';
+import StudentDetail from './pages/StudentDetail';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { ThemeProvider, createTheme } from '@mui/material';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -76,7 +77,15 @@ const App = () => {
                 </ProtectedRoute>
               }
             />
-            <Route path="/" element={<Navigate to="/login" replace />} />
+            <Route
+              path="/student/:id"
+              element={
+                <ProtectedRoute>
+                  <StudentDetail />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </Router>
       </ThemeProvider>

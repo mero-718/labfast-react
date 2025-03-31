@@ -15,7 +15,6 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions,
   styled,
   Avatar,
   TextField,
@@ -25,20 +24,20 @@ import {
   Drawer,
   List,
   ListItemButton,
-  ListItemIcon,
   ListItemText,
+  TablePagination,
 } from '@mui/material';
 import {
   Delete as DeleteIcon,
   Edit as EditIcon,
   Search as SearchIcon,
-  School as SchoolIcon,
   ExitToApp as LogoutIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../hooks/useAuth';
 import { useGetUsersQuery, useDeleteUserMutation, useRegisterMutation } from '../store/api/apiSlice';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { useNavigate } from 'react-router-dom';
 
 const DRAWER_WIDTH = 280;
 
@@ -93,7 +92,8 @@ const HeaderContainer = styled(Box)({
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
-  marginBottom: '1rem',
+  marginBottom: '2rem',
+  marginTop: '2rem',
 });
 
 const SearchField = styled(TextField)({
@@ -187,6 +187,36 @@ const StyledDialogTitle = styled(DialogTitle)({
   paddingLeft: '24px',
 });
 
+const StyledTableRow = styled(TableRow)(({ theme }) => ({
+  '&:nth-of-type(odd)': {
+    backgroundColor: '#f8f9fa',
+  },
+  '&:hover': {
+    backgroundColor: 'rgba(254, 175, 0, 0.04)',
+    cursor: 'pointer',
+  },
+}));
+
+const StyledDialog = styled(Dialog)({
+  '& .MuiDialog-paper': {
+    borderRadius: '20px',
+    padding: '1rem',
+  },
+  '& .MuiBackdrop-root': {
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+  },
+});
+
+// Add this interface near the top of the file, after imports
+interface User {
+  id: number;
+  username: string;
+  email: string;
+  phone?: string | null;
+  enrollNumber?: string | null;
+  dateOfAdmission?: string | null;
+}
+
 export const Dashboard = () => {
   const { handleLogout, user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
@@ -199,6 +229,11 @@ export const Dashboard = () => {
     username: '',
   });
   const [error, setError] = useState('');
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [viewMode, setViewMode] = useState(false);
+  const navigate = useNavigate();
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(7);
 
   const {
     data: users,
@@ -242,8 +277,14 @@ export const Dashboard = () => {
     )
   );
 
-  const onDeleteClick = (id: number) => {
-    setSelectedId(id);
+  const paginatedUsers = filteredUsers?.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
+  );
+
+  const onDeleteClick = (user: User) => {
+    setSelectedId(user.id);
+    setSelectedUser(user);
     setDeleteDialogOpen(true);
   };
 
@@ -253,8 +294,28 @@ export const Dashboard = () => {
         await deleteUser(selectedId).unwrap();
         setDeleteDialogOpen(false);
         setSelectedId(null);
+        toast.success('Student deleted successfully!', {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        });
       } catch (err) {
         console.error('Failed to delete user:', err);
+        toast.error('Failed to delete student. Please try again.', {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        });
       }
     }
   };
@@ -300,6 +361,25 @@ export const Dashboard = () => {
       ...prev,
       [name]: value
     }));
+  };
+
+  const handleRowClick = (user: User) => {
+    navigate(`/student/${user.id}`);
+  };
+
+  const handleEditClick = (user: User) => {
+    setSelectedUser(user);
+    setViewMode(true);
+    setAddStudentOpen(true);
+  };
+
+  const handleChangePage = (event: unknown, newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
   };
 
   const renderSidebar = () => (
@@ -426,7 +506,7 @@ export const Dashboard = () => {
       {renderSidebar()}
       <MainContent>
         <Container maxWidth="xl">
-          <Paper sx={{ p: 3, borderRadius: 2 }}>
+          <Paper sx={{ p: 3, borderRadius: 2, mt: 3 }}>
             <TitleBar>
               <Typography variant="h6" fontWeight="bold">
                 Students List
@@ -476,11 +556,13 @@ export const Dashboard = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {filteredUsers?.map((user) => (
-                    <TableRow key={user.id}>
+                  {paginatedUsers?.map((user) => (
+                    <StyledTableRow
+                      key={user.id}
+                      onClick={() => handleRowClick(user)}
+                    >
                       <TableCell>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                          {/* <Avatar src={user.avatar} alt={user.username}> */}
                           <Avatar src="/avatar/man.png" alt={user.username}>
                             {user.username?.charAt(0)}
                           </Avatar>
@@ -500,40 +582,68 @@ export const Dashboard = () => {
                         })}
                       </TableCell>
                       <TableCell align="right">
-                        <IconButton color="primary">
+                        <IconButton
+                          color="primary"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEditClick(user);
+                          }}
+                        >
                           <EditIcon />
                         </IconButton>
                         <IconButton
                           color="error"
-                          onClick={() => onDeleteClick(user.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDeleteClick(user);
+                          }}
                           disabled={isDeleting}
                         >
                           <DeleteIcon />
                         </IconButton>
                       </TableCell>
-                    </TableRow>
+                    </StyledTableRow>
                   ))}
-                  {filteredUsers?.length === 0 && (
+                  {(!filteredUsers || filteredUsers.length === 0) && (
                     <TableRow>
-                      <TableCell colSpan={6} align="center">
+                      <TableCell colSpan={7} align="center">
                         No students found
                       </TableCell>
                     </TableRow>
                   )}
                 </TableBody>
               </Table>
+              <TablePagination
+                rowsPerPageOptions={[5, 10, 25]}
+                component="div"
+                count={filteredUsers?.length || 0}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                onPageChange={handleChangePage}
+                onRowsPerPageChange={handleChangeRowsPerPage}
+                sx={{
+                  '.MuiTablePagination-select': {
+                    borderRadius: '8px',
+                  },
+                  '.MuiTablePagination-selectIcon': {
+                    color: '#666666',
+                  },
+                }}
+              />
             </StyledTableContainer>
           </Paper>
         </Container>
       </MainContent>
 
-      {/* Add Student Modal */}
+      {/* Modify the Add/View Student Modal */}
       <Dialog
         open={addStudentOpen}
         onClose={() => {
           setAddStudentOpen(false);
           setError('');
           setNewStudent({ email: '', password: '', username: '' });
+          setSelectedUser(null);
+          setViewMode(false);
         }}
         maxWidth="sm"
         fullWidth
@@ -550,7 +660,9 @@ export const Dashboard = () => {
         >
           <StyledDialogTitle>
             <div className="bar" />
-            <Typography variant="h5" fontWeight="bold">Create a new Student</Typography>
+            <Typography variant="h5" fontWeight="bold">
+              {viewMode ? 'Student Information' : 'Create a new Student'}
+            </Typography>
           </StyledDialogTitle>
         </Box>
         <DialogContent sx={{ p: 3 }}>
@@ -564,59 +676,138 @@ export const Dashboard = () => {
             label="Email"
             name="email"
             type="email"
-            value={newStudent.email}
+            value={viewMode ? selectedUser?.email : newStudent.email}
             onChange={handleInputChange}
+            disabled={viewMode}
           />
-          <StyledTextField
-            fullWidth
-            label="Password"
-            name="password"
-            type="password"
-            value={newStudent.password}
-            onChange={handleInputChange}
-          />
+          {!viewMode && (
+            <StyledTextField
+              fullWidth
+              label="Password"
+              name="password"
+              type="password"
+              value={newStudent.password}
+              onChange={handleInputChange}
+            />
+          )}
           <StyledTextField
             fullWidth
             label="Username"
             name="username"
-            value={newStudent.username}
+            value={viewMode ? selectedUser?.username : newStudent.username}
             onChange={handleInputChange}
+            disabled={viewMode}
           />
-          <Button
+          <StyledTextField
             fullWidth
-            variant="contained"
-            onClick={handleAddStudent}
-            disabled={isAdding}
-            sx={{
-              mt: 2,
-              bgcolor: '#FFA500',
-              '&:hover': { bgcolor: '#FF8C00' },
-              textTransform: 'none',
-            }}
-          >
-            {isAdding ? <CircularProgress size={24} /> : 'SAVE'}
-          </Button>
+            label="Phone"
+            name="phone"
+            value={viewMode ? selectedUser?.phone : null}
+            onChange={handleInputChange}
+            disabled={viewMode}
+          />
+          <StyledTextField
+            fullWidth
+            label="Enroll Number"
+            name="enrollNumber"
+            value={viewMode ? selectedUser?.enrollNumber || `STU${String(selectedUser?.id).padStart(4, '0')}` : null}
+            onChange={handleInputChange}
+            disabled={viewMode}
+          />
+          <StyledTextField
+            fullWidth
+            label="Date of Admission"
+            name="dateOfAdmission"
+            value={viewMode ? selectedUser?.dateOfAdmission || new Date().toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            }) : null}
+            onChange={handleInputChange}
+            disabled={viewMode}
+          />
+          {!viewMode && (
+            <Button
+              fullWidth
+              variant="contained"
+              onClick={handleAddStudent}
+              disabled={isAdding}
+              sx={{
+                mt: 2,
+                bgcolor: '#FFA500',
+                '&:hover': { bgcolor: '#FF8C00' },
+                textTransform: 'none',
+              }}
+            >
+              {isAdding ? <CircularProgress size={24} /> : 'SAVE'}
+            </Button>
+          )}
         </DialogContent>
       </Dialog>
 
-      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
-        <DialogTitle>Confirm Delete</DialogTitle>
-        <DialogContent>
-          Are you sure you want to delete this student?
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)} disabled={isDeleting}>
-            Cancel
-          </Button>
-          <Button
-            onClick={confirmDelete}
-            color="error"
-            disabled={isDeleting}
+      {/* Update the delete dialog */}
+      <StyledDialog
+        open={deleteDialogOpen}
+        onClose={() => {}}
+        maxWidth="xs"
+        fullWidth
+        disableEscapeKeyDown
+        hideBackdrop={false}
+        BackdropProps={{
+          sx: { backdropFilter: 'blur(2px)' }
+        }}
+      >
+        <Box sx={{ p: 2 }}>
+          <Box
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
+            justifyContent="center"
+            textAlign="center"
           >
-            {isDeleting ? <CircularProgress size={24} /> : 'Delete'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+            <TitleContainer>
+              <div className="bar" />
+              <Typography variant="h5" fontWeight="bold">
+                Delete student?
+              </Typography>
+            </TitleContainer>
+          </Box>
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+            Are you sure you want to delete <strong>{selectedUser?.email}</strong> student?
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+            <Button
+              onClick={() => setDeleteDialogOpen(false)}
+              disabled={isDeleting}
+              sx={{
+                color: '#9FA2B4',
+                '&:hover': {
+                  backgroundColor: 'rgba(159, 162, 180, 0.1)',
+                },
+                textTransform: 'none',
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={confirmDelete}
+              disabled={isDeleting}
+              sx={{
+                bgcolor: '#FFA500',
+                color: 'white',
+                '&:hover': {
+                  bgcolor: '#FF8C00',
+                },
+                textTransform: 'none',
+                borderRadius: '8px',
+                minWidth: '100px',
+              }}
+            >
+              {isDeleting ? <CircularProgress size={24} /> : 'Delete'}
+            </Button>
+          </Box>
+        </Box>
+      </StyledDialog>
     </Box>
   );
 }; 
