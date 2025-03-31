@@ -10,6 +10,7 @@ import {
   Box,
   TablePagination,
   styled,
+  Paper,
 } from '@mui/material';
 import {
   Delete as DeleteIcon,
@@ -29,10 +30,10 @@ const StyledTableContainer = styled(TableContainer)({
 
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
   '&:nth-of-type(odd)': {
-    backgroundColor: '#f8f9fa',
+    backgroundColor: theme.palette.action.hover,
   },
   '&:hover': {
-    backgroundColor: 'rgba(254, 175, 0, 0.04)',
+    backgroundColor: theme.palette.action.selected,
     cursor: 'pointer',
   },
 }));
@@ -50,6 +51,7 @@ interface StudentTableProps {
   users: User[];
   page: number;
   rowsPerPage: number;
+  totalCount: number;
   onPageChange: (event: unknown, newPage: number) => void;
   onRowsPerPageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onRowClick: (user: User) => void;
@@ -62,6 +64,7 @@ export const StudentTable = ({
   users,
   page,
   rowsPerPage,
+  totalCount,
   onPageChange,
   onRowsPerPageChange,
   onRowClick,
@@ -70,7 +73,7 @@ export const StudentTable = ({
   isDeleting,
 }: StudentTableProps) => {
   return (
-    <StyledTableContainer>
+    <TableContainer component={Paper}>
       <Table>
         <TableHead>
           <TableRow>
@@ -142,22 +145,14 @@ export const StudentTable = ({
         </TableBody>
       </Table>
       <TablePagination
-        rowsPerPageOptions={[5, 10, 25]}
         component="div"
-        count={users.length}
-        rowsPerPage={rowsPerPage}
+        count={totalCount}
         page={page}
         onPageChange={onPageChange}
+        rowsPerPage={rowsPerPage}
         onRowsPerPageChange={onRowsPerPageChange}
-        sx={{
-          '.MuiTablePagination-select': {
-            borderRadius: '8px',
-          },
-          '.MuiTablePagination-selectIcon': {
-            color: '#666666',
-          },
-        }}
+        rowsPerPageOptions={[5, 7, 10]}
       />
-    </StyledTableContainer>
+    </TableContainer>
   );
 }; 

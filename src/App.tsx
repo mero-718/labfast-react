@@ -1,14 +1,12 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { store } from './store/store';
-import { Login } from './components/auth/Login';
-import { Register } from './components/auth/Register';
-import { Dashboard } from './components/dashboard/Dashboard';
-import { ProtectedRoute } from './components/common/ProtectedRoute';
 import { ThemeProvider, createTheme } from '@mui/material';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import CssBaseline from '@mui/material/CssBaseline';
+import { routes } from './config/routes';
 import './App.css';
-import  StudentDetail  from './pages/StudentDetail';
 
 // Create a theme instance
 const theme = createTheme({
@@ -67,27 +65,16 @@ const App = () => {
         <CssBaseline />
         <Router>
           <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/student/:id"
-              element={
-                <ProtectedRoute>
-                  <StudentDetail />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="/" element={<Navigate to="/login" replace />} />
+            {routes.map((route, index) => (
+              <Route
+                key={index}
+                path={route.path}
+                element={route.element}
+              />
+            ))}
           </Routes>
         </Router>
+        <ToastContainer />
       </ThemeProvider>
     </Provider>
   );

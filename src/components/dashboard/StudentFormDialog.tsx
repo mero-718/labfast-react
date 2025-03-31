@@ -77,12 +77,33 @@ export const StudentFormDialog = ({
   onInputChange,
   isSubmitting,
 }: StudentFormDialogProps) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    if (viewMode && selectedUser) {
+      // Update the selectedUser object directly
+      const updatedUser = {
+        ...selectedUser,
+        [name]: value
+      };
+      // Use a custom event to update the parent's selectedUser
+      const customEvent = new CustomEvent('updateUser', { detail: updatedUser });
+      window.dispatchEvent(customEvent);
+    } else {
+      onInputChange(e);
+    }
+  };
+
   return (
     <Dialog
       open={open}
-      onClose={onClose}
+      onClose={() => { }}
       maxWidth="sm"
       fullWidth
+      disableEscapeKeyDown
+      hideBackdrop={false}
+      BackdropProps={{
+        sx: { backdropFilter: 'blur(2px)' }
+      }}
     >
       <Box
         display="flex"
@@ -97,7 +118,7 @@ export const StudentFormDialog = ({
         <StyledDialogTitle>
           <div className="bar" />
           <Typography variant="h5" fontWeight="bold">
-            {viewMode ? 'Student Information' : 'Create a new Student'}
+            {viewMode ? 'Edit Student Information' : 'Create a new Student'}
           </Typography>
         </StyledDialogTitle>
       </Box>
@@ -113,8 +134,8 @@ export const StudentFormDialog = ({
           name="email"
           type="email"
           value={viewMode ? selectedUser?.email : newStudent.email}
-          onChange={onInputChange}
-          disabled={viewMode}
+          onChange={handleInputChange}
+          disabled={false}
         />
         {!viewMode && (
           <StyledTextField
@@ -131,17 +152,17 @@ export const StudentFormDialog = ({
           label="Username"
           name="username"
           value={viewMode ? selectedUser?.username : newStudent.username}
-          onChange={onInputChange}
-          disabled={viewMode}
+          onChange={handleInputChange}
+          disabled={false}
         />
         {viewMode && (
           <StyledTextField
             fullWidth
             label="Phone"
             name="phone"
-            value={viewMode ? selectedUser?.phone : ''}
-            onChange={onInputChange}
-            disabled={viewMode}
+            value={selectedUser?.phone || ''}
+            onChange={handleInputChange}
+            disabled={false}
           />
         )}
         {viewMode && (
@@ -149,9 +170,9 @@ export const StudentFormDialog = ({
             fullWidth
             label="Enroll Number"
             name="enrollNumber"
-            value={viewMode ? selectedUser?.enrollNumber : ''}
-            onChange={onInputChange}
-            disabled={viewMode}
+            value={selectedUser?.enrollNumber || `STU${String(selectedUser?.id).padStart(4, '0')}`}
+            onChange={handleInputChange}
+            disabled={false}
           />
         )}
         {viewMode && (
@@ -159,27 +180,53 @@ export const StudentFormDialog = ({
             fullWidth
             label="Date of Admission"
             name="dateOfAdmission"
-            value={viewMode ? selectedUser?.dateOfAdmission : ''}
-            onChange={onInputChange}
-            disabled={viewMode}
+            value={selectedUser?.dateOfAdmission || new Date().toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            })}
+            onChange={handleInputChange}
+            disabled={false}
           />
         )}
-        {!viewMode && (
+        <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+          <Button
+            fullWidth
+            variant="outlined"
+            onClick={onClose}
+            disabled={isSubmitting}
+            sx={{
+              borderColor: '#FFA500',
+              color: '#FFA500',
+              '&:hover': {
+                borderColor: '#FF8C00',
+                backgroundColor: 'rgba(255, 165, 0, 0.04)',
+              },
+              textTransform: 'none',
+            }}
+          >
+            Cancel
+          </Button>
           <Button
             fullWidth
             variant="contained"
             onClick={onSubmit}
             disabled={isSubmitting}
             sx={{
-              mt: 2,
               bgcolor: '#FFA500',
               '&:hover': { bgcolor: '#FF8C00' },
               textTransform: 'none',
             }}
           >
-            {isSubmitting ? <CircularProgress size={24} /> : 'SAVE'}
+            {isSubmitting ? (
+              <CircularProgress size={24} />
+            ) : viewMode ? (
+              'Update'
+            ) : (
+              'Save'
+            )}
           </Button>
-        )}
+        </Box>
       </DialogContent>
     </Dialog>
   );
