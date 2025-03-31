@@ -14,7 +14,7 @@ import {
 import {
   Search as SearchIcon,
 } from '@mui/icons-material';
-import { useGetUsersQuery, useDeleteUserMutation, useRegisterMutation } from '../../store/api/apiSlice';
+import { useGetUsersQuery, useDeleteUserMutation, useRegisterMutation, useUpdateUserMutation } from '../../store/api/apiSlice';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
@@ -101,6 +101,7 @@ export const Dashboard = () => {
 
   const [deleteUser, { isLoading: isDeleting }] = useDeleteUserMutation();
   const [addUser, { isLoading: isAdding }] = useRegisterMutation();
+  const [updateUser, { isLoading: isUpdating }] = useUpdateUserMutation();
 
   useEffect(() => {
     refetch();
@@ -127,9 +128,10 @@ export const Dashboard = () => {
     Object.values(user).some((value) =>
       value?.toString().toLowerCase().includes(searchTerm.toLowerCase())
     )
-  );
+  ) || [];
 
-  const paginatedUsers = filteredUsers?.slice(
+  const totalCount = filteredUsers.length;
+  const paginatedUsers = filteredUsers.slice(
     page * rowsPerPage,
     page * rowsPerPage + rowsPerPage
   );
@@ -174,27 +176,57 @@ export const Dashboard = () => {
 
   const handleAddStudent = async () => {
     try {
-      if (!newStudent.email || !newStudent.password || !newStudent.username) {
-        setError('Please fill in all fields');
-        return;
+      if (viewMode && selectedUser) {
+        // Update existing user
+        if (!selectedUser.username || !selectedUser.email) {
+          setError('Please fill in all required fields');
+          return;
+        }
+        await updateUser({
+          id: selectedUser.id,
+          username: selectedUser.username,
+          email: selectedUser.email,
+          phone: selectedUser.phone || '',
+          enrollNumber: selectedUser.enrollNumber || '',
+          dateOfAdmission: selectedUser.dateOfAdmission || '',
+        }).unwrap();
+        setAddStudentOpen(false);
+        setSelectedUser(null);
+        setViewMode(false);
+        toast.success('Student updated successfully!', {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        });
+      } else {
+        // Create new user
+        if (!newStudent.email || !newStudent.password || !newStudent.username) {
+          setError('Please fill in all fields');
+          return;
+        }
+        await addUser(newStudent).unwrap();
+        setAddStudentOpen(false);
+        setNewStudent({ email: '', password: '', username: '' });
+        setError('');
+        toast.success('Student created successfully!', {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        });
       }
-      await addUser(newStudent).unwrap();
-      setAddStudentOpen(false);
-      setNewStudent({ email: '', password: '', username: '' });
-      setError('');
-      toast.success('Student created successfully!', {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-      });
     } catch (err) {
-      setError('Failed to add student. Please try again.');
-      toast.error('Failed to create student. Please try again.', {
+      setError(viewMode ? 'Failed to update student. Please try again.' : 'Failed to add student. Please try again.');
+      toast.error(viewMode ? 'Failed to update student. Please try again.' : 'Failed to create student. Please try again.', {
         position: "top-right",
         autoClose: 3000,
         hideProgressBar: false,
@@ -343,9 +375,10 @@ export const Dashboard = () => {
             </HeaderContainer>
 
             <StudentTable
-              users={paginatedUsers || []}
+              users={paginatedUsers}
               page={page}
               rowsPerPage={rowsPerPage}
+              totalCount={totalCount}
               onPageChange={handleChangePage}
               onRowsPerPageChange={handleChangeRowsPerPage}
               onRowClick={handleRowClick}
@@ -372,7 +405,7 @@ export const Dashboard = () => {
         selectedUser={selectedUser}
         newStudent={newStudent}
         onInputChange={handleInputChange}
-        isSubmitting={isAdding}
+        isSubmitting={isAdding || isUpdating}
       />
 
       <DeleteConfirmationDialog

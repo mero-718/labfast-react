@@ -1,7 +1,7 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { setCredentials, logout } from '../store/slices/authSlice';
+import { setCredentials, logout, initializeAuth } from '../store/slices/authSlice';
 import { useLoginMutation, useRegisterMutation, LoginRequest } from '../store/api/apiSlice';
 import { RootState } from '../store/store';
 
@@ -11,12 +11,18 @@ export const useAuth = () => {
   const [login] = useLoginMutation();
   const [register] = useRegisterMutation();
   const user = useSelector((state: RootState) => state.auth.user);
+  const token = useSelector((state: RootState) => state.auth.token);
+  const isAuthenticated = !!token && !!user;
+
+  useEffect(() => {
+    dispatch(initializeAuth());
+  }, [dispatch]);
 
   const handleLogin = useCallback(
     async (credentials: LoginRequest) => {
       try {
         const result = await login(credentials).unwrap();
-        dispatch(setCredentials({ 
+        dispatch(setCredentials({
           token: result.token,
           user: {
             name: credentials.username,
@@ -62,6 +68,8 @@ export const useAuth = () => {
 
   return {
     user,
+    token,
+    isAuthenticated,
     handleLogin,
     handleRegister,
     handleLogout,
