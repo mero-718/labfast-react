@@ -10,6 +10,8 @@ import {
   TextField,
   InputAdornment,
   Alert,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -30,6 +32,10 @@ const MainContent = styled(Box)(({ theme }) => ({
   backgroundColor: '#F8F8F8',
   minHeight: '100vh',
   marginLeft: '280px',
+  [theme.breakpoints.down('sm')]: {
+    marginLeft: 0,
+    padding: theme.spacing(1),
+  },
 }));
 
 const TitleBar = styled(Box)({
@@ -44,13 +50,18 @@ const TitleBar = styled(Box)({
   },
 });
 
-const HeaderContainer = styled(Box)({
+const HeaderContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
   marginBottom: '2rem',
   marginTop: '2rem',
-});
+  [theme.breakpoints.down('sm')]: {
+    flexDirection: 'column',
+    gap: '1rem',
+    alignItems: 'stretch',
+  },
+}));
 
 const SearchField = styled(TextField)({
   '& .MuiOutlinedInput-root': {
@@ -75,8 +86,10 @@ interface User {
 
 export const Dashboard = () => {
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [searchTerm, setSearchTerm] = useState('');
-  const debouncedSearchTerm = useDebounce(searchTerm, 300); // 300ms delay
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [addStudentOpen, setAddStudentOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -358,7 +371,7 @@ export const Dashboard = () => {
                     </InputAdornment>
                   ),
                 }}
-                sx={{ width: 300 }}
+                sx={{ width: isMobile ? '100%' : 300 }}
               />
               <Button
                 variant="contained"
@@ -372,6 +385,7 @@ export const Dashboard = () => {
                   '&:hover': { bgcolor: '#FF8C00' },
                   borderRadius: '20px',
                   textTransform: 'none',
+                  width: isMobile ? '100%' : 'auto',
                 }}
               >
                 ADD NEW STUDENT

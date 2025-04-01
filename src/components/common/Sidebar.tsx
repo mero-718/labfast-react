@@ -6,17 +6,23 @@ import {
   List,
   ListItemButton,
   ListItemText,
+  IconButton,
+  Drawer,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import { 
   ExitToApp as LogoutIcon,
   People as PeopleIcon,
+  Menu as MenuIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { useState } from 'react';
 
 const DRAWER_WIDTH = 280;
 
-const StyledDrawer = styled('div')({
+const StyledDrawer = styled('div')(({ theme }) => ({
   width: DRAWER_WIDTH,
   flexShrink: 0,
   backgroundColor: '#F2EAE1',
@@ -28,7 +34,20 @@ const StyledDrawer = styled('div')({
   top: 0,
   display: 'flex',
   flexDirection: 'column',
-});
+  [theme.breakpoints.down('sm')]: {
+    display: 'none',
+  },
+}));
+
+const MobileDrawer = styled(Drawer)(({ theme }) => ({
+  '& .MuiDrawer-paper': {
+    width: DRAWER_WIDTH,
+    backgroundColor: '#F2EAE1',
+    [theme.breakpoints.up('sm')]: {
+      display: 'none',
+    },
+  },
+}));
 
 const ProfileSection = styled(Box)({
   padding: '2rem',
@@ -90,17 +109,50 @@ const LogoutContainer = styled(Box)({
   width: '100%',
 });
 
+const MobileMenuButton = styled(IconButton)(({ theme }) => ({
+  position: 'fixed',
+  top: 16,
+  left: 16,
+  zIndex: 1200,
+  backgroundColor: '#F2EAE1',
+  '&:hover': {
+    backgroundColor: '#F2EAE1',
+  },
+  [theme.breakpoints.up('sm')]: {
+    display: 'none',
+  },
+}));
+
 interface SidebarProps {
   selected?: boolean;
   onStudentsClick?: () => void;
+  onClose?: () => void;
 }
 
-export const Sidebar = ({ selected = false, onStudentsClick }: SidebarProps) => {
+export const Sidebar = ({ selected = false, onStudentsClick, onClose }: SidebarProps) => {
   const navigate = useNavigate();
   const { handleLogout, user } = useAuth();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-  return (
-    <StyledDrawer>
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
+  };
+
+  const handleNavigation = () => {
+    if (onStudentsClick) {
+      onStudentsClick();
+    } else {
+      navigate('/dashboard');
+    }
+    if (isMobile) {
+      setMobileOpen(false);
+    }
+  };
+
+  const drawerContent = (
+    <>
       <TitleContainer>
         <div className="bar" />
         <Typography variant="h6" fontWeight="bold">
@@ -123,7 +175,7 @@ export const Sidebar = ({ selected = false, onStudentsClick }: SidebarProps) => 
       <List>
         <StyledListItemButton 
           selected={selected} 
-          onClick={onStudentsClick || (() => navigate('/dashboard'))}
+          onClick={handleNavigation}
         >
           <ListItemText
             primary="Students"
@@ -145,6 +197,33 @@ export const Sidebar = ({ selected = false, onStudentsClick }: SidebarProps) => 
           </Box>
         </LogoutButton>
       </LogoutContainer>
-    </StyledDrawer>
+    </>
+  );
+
+  return (
+    <>
+      <MobileMenuButton
+        color="inherit"
+        aria-label="open drawer"
+        edge="start"
+        onClick={handleDrawerToggle}
+      >
+        <MenuIcon />
+      </MobileMenuButton>
+      <StyledDrawer>
+        {drawerContent}
+      </StyledDrawer>
+      <MobileDrawer
+        variant="temporary"
+        anchor="left"
+        open={mobileOpen}
+        onClose={handleDrawerToggle}
+        ModalProps={{
+          keepMounted: true, // Better open performance on mobile.
+        }}
+      >
+        {drawerContent}
+      </MobileDrawer>
+    </>
   );
 }; 

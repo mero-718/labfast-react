@@ -11,6 +11,9 @@ import {
   TablePagination,
   styled,
   Paper,
+  useTheme,
+  useMediaQuery,
+  Typography,
 } from '@mui/material';
 import {
   Delete as DeleteIcon,
@@ -24,6 +27,18 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   '&:hover': {
     backgroundColor: theme.palette.action.selected,
     cursor: 'pointer',
+  },
+}));
+
+const ResponsiveTableCell = styled(TableCell)(({ theme }) => ({
+  [theme.breakpoints.down('sm')]: {
+    display: 'none',
+  },
+}));
+
+const MobileTableCell = styled(TableCell)(({ theme }) => ({
+  [theme.breakpoints.up('sm')]: {
+    display: 'none',
   },
 }));
 
@@ -61,6 +76,9 @@ export const StudentTable = ({
   onDeleteClick,
   isDeleting,
 }: StudentTableProps) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   return (
     <TableContainer component={Paper}>
       <Table>
@@ -68,10 +86,10 @@ export const StudentTable = ({
           <TableRow>
             <TableCell></TableCell>
             <TableCell>Name</TableCell>
-            <TableCell>Email</TableCell>
-            <TableCell>Phone</TableCell>
-            <TableCell>Enroll Number</TableCell>
-            <TableCell>Date of admission</TableCell>
+            <ResponsiveTableCell>Email</ResponsiveTableCell>
+            <ResponsiveTableCell>Phone</ResponsiveTableCell>
+            <ResponsiveTableCell>Enroll Number</ResponsiveTableCell>
+            <ResponsiveTableCell>Date of admission</ResponsiveTableCell>
             <TableCell align="right">Actions</TableCell>
           </TableRow>
         </TableHead>
@@ -89,18 +107,31 @@ export const StudentTable = ({
                 </Box>
               </TableCell>
               <TableCell>{user.username}</TableCell>
-              <TableCell>{user.email}</TableCell>
-              <TableCell>{user.phone || '-'}</TableCell>
-              <TableCell>
+              <ResponsiveTableCell>{user.email}</ResponsiveTableCell>
+              <ResponsiveTableCell>{user.phone || '-'}</ResponsiveTableCell>
+              <ResponsiveTableCell>
                 {user.enrollNumber || `STU${String(user.id).padStart(4, '0')}`}
-              </TableCell>
-              <TableCell>
+              </ResponsiveTableCell>
+              <ResponsiveTableCell>
                 {user.dateOfAdmission || new Date().toLocaleDateString('en-US', {
                   year: 'numeric',
                   month: 'long',
                   day: 'numeric'
                 })}
-              </TableCell>
+              </ResponsiveTableCell>
+              <MobileTableCell>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    {user.email}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {user.phone || '-'}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {user.enrollNumber || `STU${String(user.id).padStart(4, '0')}`}
+                  </Typography>
+                </Box>
+              </MobileTableCell>
               <TableCell align="right">
                 <IconButton
                   color="primary"
@@ -126,7 +157,7 @@ export const StudentTable = ({
           ))}
           {(!users || users.length === 0) && (
             <TableRow>
-              <TableCell colSpan={7} align="center">
+              <TableCell colSpan={isMobile ? 3 : 7} align="center">
                 No students found
               </TableCell>
             </TableRow>
