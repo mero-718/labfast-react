@@ -16,15 +16,15 @@ import {
 import {
   Search as SearchIcon,
 } from '@mui/icons-material';
-import { useGetUsersQuery, useDeleteUserMutation, useRegisterMutation, useUpdateUserMutation } from '../../store/api/apiSlice';
+import { useGetUsersQuery, useDeleteUserMutation, useRegisterMutation, useUpdateUserMutation } from '@/store/api/apiSlice';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
-import { Sidebar } from '../common/Sidebar';
-import { StudentTable } from './StudentTable';
-import { StudentFormDialog } from './StudentFormDialog';
-import { DeleteConfirmationDialog } from './DeleteConfirmationDialog';
-import { useDebounce } from '../../hooks/useDebounce';
+import { Sidebar } from '@/components/common/Sidebar';
+import { StudentTable } from '@/components/dashboard/StudentTable';
+import { StudentFormDialog } from '@/components/dashboard/StudentFormDialog';
+import { DeleteConfirmationDialog } from '@/components/dashboard/DeleteConfirmationDialog';
+import { useDebounce } from '@/hooks/useDebounce';
 
 const MainContent = styled(Box)(({ theme }) => ({
   flexGrow: 1,
@@ -84,7 +84,7 @@ interface User {
   dateOfAdmission?: string | null;
 }
 
-export const Dashboard = () => {
+const Dashboard = () => {
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -436,4 +436,6 @@ export const Dashboard = () => {
       />
     </Box>
   );
-}; 
+};
+
+export default Dashboard; 

@@ -12,8 +12,8 @@ import {
   CircularProgress,
   Alert,
 } from '@mui/material';
-import { useAuth } from '../../hooks/useAuth';
-import { useLoginMutation } from '../../store/api/apiSlice';
+import { useAuth } from '@/hooks/useAuth';
+import { useLoginMutation } from '@/store/api/apiSlice';
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
 import { SerializedError } from '@reduxjs/toolkit';
 

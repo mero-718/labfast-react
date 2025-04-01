@@ -12,7 +12,7 @@ const MainContent = styled(Box)(({ theme }) => ({
   justifyContent: 'center',
 }));
 
-const NotFound = () => {
+export const NotFound = () => {
   const navigate = useNavigate();
 
   return (
@@ -60,5 +60,3 @@ const NotFound = () => {
     </Box>
   );
 };
-
-export default NotFound; 

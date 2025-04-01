@@ -1,7 +1,5 @@
-import  Profile  from '../../components/profile/StudentDetail';
+import  Profile  from '@/components/profile/StudentDetail';
 
-const ProfilePage = () => {
+export const ProfilePage = () => {
   return <Profile />;
 };
-
-export default ProfilePage; 

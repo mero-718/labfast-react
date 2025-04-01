@@ -17,7 +17,7 @@ import {
   Menu as MenuIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '@/hooks/useAuth';
 import { useState } from 'react';
 
 const DRAWER_WIDTH = 280;

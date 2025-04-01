@@ -1,12 +1,12 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Provider } from 'react-redux';
-import { store } from './store/store';
+import { store } from '@/store/store';
 import { ThemeProvider, createTheme } from '@mui/material';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import CssBaseline from '@mui/material/CssBaseline';
-import { routes } from './config/routes';
-import './App.css';
+import { routes } from '@/config/routes';
+import '@/App.css';
 
 // Create a theme instance
 const theme = createTheme({

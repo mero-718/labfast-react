@@ -1,13 +1,13 @@
 import { RouteObject } from 'react-router-dom';
 import React from 'react';
-import LoginPage from '../pages/auth/LoginPage';
-import RegisterPage from '../pages/auth/RegisterPage';
-import DashboardPage from '../pages/dashboard/DashboardPage';
-import ProfilePage from '../pages/profile/ProfilePage';
-import NotFound from '../pages/NotFound';
-import { ProtectedRoute } from '../components/common/ProtectedRoute';
+import { LoginPage } from '@/pages/auth/LoginPage';
+import { RegisterPage } from '@/pages/auth/RegisterPage';
+import { DashboardPage } from '@/pages/dashboard/DashboardPage';
+import { ProfilePage } from '@/pages/profile/ProfilePage';
+import { NotFound } from '@/pages/NotFound';
+import { ProtectedRoute } from '@/components/common/ProtectedRoute';
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '@/hooks/useAuth';
 
 export const routes: RouteObject[] = [
   {

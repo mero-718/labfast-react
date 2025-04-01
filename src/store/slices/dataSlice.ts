@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { DataItem } from '../api/apiSlice';
+import { DataItem } from '@/store/api/apiSlice';
 
 interface DataState {
   selectedItem: DataItem | null;

@@ -1,9 +1,9 @@
 import { useCallback, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { setCredentials, logout, initializeAuth } from '../store/slices/authSlice';
-import { useLoginMutation, useRegisterMutation, LoginRequest } from '../store/api/apiSlice';
-import { RootState } from '../store/store';
+import { setCredentials, logout, initializeAuth } from '@/store/slices/authSlice';
+import { useLoginMutation, useRegisterMutation, LoginRequest } from '@/store/api/apiSlice';
+import { RootState } from '@/store/store';
 
 export const useAuth = () => {
   const dispatch = useDispatch();

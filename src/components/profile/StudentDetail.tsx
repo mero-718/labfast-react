@@ -14,8 +14,8 @@ import {
   Email as EmailIcon,
   Person as PersonIcon,
 } from '@mui/icons-material';
-import { useGetUserQuery } from '../../store/api/apiSlice';
-import { Sidebar } from '../../components/common/Sidebar';
+import { useGetUserQuery } from '@/store/api/apiSlice';
+import { Sidebar } from '@/components/common/Sidebar';
 
 const InfoCard = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(2),
