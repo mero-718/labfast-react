@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-const YOUR_API_BASE_URL = 'https://fakestoreapi.com/';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 // Define types for our data
 export interface DataItem {
@@ -38,7 +38,7 @@ export interface RegisterRequest {
 export const apiSlice = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({
-    baseUrl: YOUR_API_BASE_URL,
+    baseUrl: BACKEND_URL,
     prepareHeaders: (headers) => {
       const token = localStorage.getItem('token');
       if (token) {

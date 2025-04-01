@@ -111,10 +111,9 @@ const LogoutContainer = styled(Box)({
 
 const MobileMenuButton = styled(IconButton)(({ theme }) => ({
   position: 'fixed',
-  top: 16,
-  left: 16,
+  top: 26,
+  left: 20,
   zIndex: 1200,
-  backgroundColor: '#F2EAE1',
   '&:hover': {
     backgroundColor: '#F2EAE1',
   },

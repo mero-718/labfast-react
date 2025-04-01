@@ -350,9 +350,9 @@ export const Dashboard = () => {
       />
       <Sidebar selected />
       <MainContent>
-        <Container maxWidth="xl">
-          <Paper sx={{ p: 3, borderRadius: 2, mt: 3 }}>
-            <TitleBar>
+        <Container maxWidth="xl" sx={{ padding: 0 }}>
+          <Paper sx={{ p: 3, borderRadius: 2, mt: isMobile ? 0 : 3 }}>
+            <TitleBar sx={{ marginLeft: isMobile ? 2 : 0 }}>
               <Typography variant="h6" fontWeight="bold">
                 Students List
               </Typography>
