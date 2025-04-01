@@ -9,8 +9,13 @@ import {
   Paper,
   Link,
   styled,
+  CircularProgress,
+  Alert,
 } from '@mui/material';
 import { useAuth } from '../../hooks/useAuth';
+import { useRegisterMutation } from '../../store/api/apiSlice';
+import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
+import { SerializedError } from '@reduxjs/toolkit';
 
 // Styled components (reusing from Login)
 const GradientBackground = styled(Box)({
@@ -54,24 +59,28 @@ export const Register = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
   const { handleRegister } = useAuth();
+  const [register, { isLoading, error }] = useRegisterMutation();
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
       return;
     }
 
     try {
-      console.log(email, password, username);
       await handleRegister(email, password, username);
     } catch (err) {
-      setError('Registration failed. Please try again.');
+      // Error is handled by RTK Query
     }
+  };
+
+  const getErrorMessage = (error: FetchBaseQueryError | SerializedError) => {
+    if ('data' in error) {
+      return error.data as string;
+    }
+    return 'Registration failed. Please try again.';
   };
 
   return (
@@ -99,6 +108,11 @@ export const Register = () => {
             </Typography>
           </Box>
 
+          {error && (
+            <Alert severity="error" sx={{ width: '100%', mb: 2 }}>
+              {getErrorMessage(error)}
+            </Alert>
+          )}
 
           <Box component="form" onSubmit={onSubmit} sx={{ mt: 3 }}>
             <TextField
@@ -112,6 +126,7 @@ export const Register = () => {
               autoFocus
               value={username}
               onChange={(e) => setUsername(e.target.value)}
+              disabled={isLoading}
               sx={{ mb: 2 }}
             />
             <TextField
@@ -124,6 +139,7 @@ export const Register = () => {
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              disabled={isLoading}
               sx={{ mb: 2 }}
             />
             <TextField
@@ -137,6 +153,7 @@ export const Register = () => {
               autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              disabled={isLoading}
               sx={{ mb: 2 }}
             />
             <TextField
@@ -149,8 +166,9 @@ export const Register = () => {
               id="confirmPassword"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              error={!!error}
-              helperText={error}
+              disabled={isLoading}
+              error={password !== confirmPassword}
+              helperText={password !== confirmPassword ? 'Passwords do not match' : ''}
               sx={{ mb: 2 }}
             />
 
@@ -158,9 +176,10 @@ export const Register = () => {
               type="submit"
               fullWidth
               variant="contained"
+              disabled={isLoading || password !== confirmPassword}
               sx={{ mt: 2, mb: 2 }}
             >
-              REGISTER
+              {isLoading ? <CircularProgress size={24} color="inherit" /> : 'REGISTER'}
             </StyledButton>
 
             <Box sx={{ textAlign: 'center' }}>

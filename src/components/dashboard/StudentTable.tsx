@@ -17,17 +17,6 @@ import {
   Edit as EditIcon,
 } from '@mui/icons-material';
 
-const StyledTableContainer = styled(TableContainer)({
-  marginTop: '1rem',
-  '& .MuiTableCell-head': {
-    fontWeight: 'bold',
-    backgroundColor: '#f5f5f5',
-  },
-  '& .MuiTableCell-body': {
-    padding: '16px 8px',
-  },
-});
-
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
   '&:nth-of-type(odd)': {
     backgroundColor: theme.palette.action.hover,

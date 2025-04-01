@@ -13,6 +13,9 @@ import {
   Alert,
 } from '@mui/material';
 import { useAuth } from '../../hooks/useAuth';
+import { useLoginMutation } from '../../store/api/apiSlice';
+import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
+import { SerializedError } from '@reduxjs/toolkit';
 
 // Styled components
 const GradientBackground = styled(Box)({
@@ -54,34 +57,35 @@ const StyledButton = styled(Button)({
 export const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const { handleLogin } = useAuth();
+  const [login, { isLoading, error }] = useLoginMutation();
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setIsLoading(true);
+
+    // Validate inputs
+    if (!username.trim() || !password.trim()) {
+      return;
+    }
+
+    // Format the credentials
+    const credentials = {
+      username: username.trim(),
+      password: password.trim(),
+    };
 
     try {
-      // Validate inputs
-      if (!username.trim() || !password.trim()) {
-        setError('Please enter both username and password');
-        return;
-      }
-
-      // Format the credentials
-      const credentials = {
-        username: username.trim(),
-        password: password.trim(),
-      };
-
       await handleLogin(credentials);
-    } catch (err: any) {
-      setError(err.message || 'Login failed. Please try again.');
-    } finally {
-      setIsLoading(false);
+    } catch (err) {
+      // Error is handled by RTK Query
     }
+  };
+
+  const getErrorMessage = (error: FetchBaseQueryError | SerializedError) => {
+    if ('data' in error) {
+      return error.data as string;
+    }
+    return 'Login failed. Please try again.';
   };
 
   return (
@@ -112,7 +116,7 @@ export const Login = () => {
 
           {error && (
             <Alert severity="error" sx={{ width: '100%', mb: 2 }}>
-              {error}
+              {getErrorMessage(error)}
             </Alert>
           )}
 

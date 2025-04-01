@@ -63,6 +63,7 @@ interface StudentFormDialogProps {
     username: string;
   };
   onInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onUserUpdate: (updatedUser: User) => void;
   isSubmitting: boolean;
 }
 
@@ -75,19 +76,26 @@ export const StudentFormDialog = ({
   selectedUser,
   newStudent,
   onInputChange,
+  onUserUpdate,
   isSubmitting,
 }: StudentFormDialogProps) => {
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+
+  const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     if (viewMode && selectedUser) {
-      // Update the selectedUser object directly
-      const updatedUser = {
-        ...selectedUser,
-        [name]: value
-      };
-      // Use a custom event to update the parent's selectedUser
-      const customEvent = new CustomEvent('updateUser', { detail: updatedUser });
-      window.dispatchEvent(customEvent);
+      try {
+        // Update the selectedUser object directly
+        const updatedUser = {
+          ...selectedUser,
+          [name]: value
+        };
+
+        // Update the parent component's state
+        onUserUpdate(updatedUser);
+
+      } catch (err) {
+        console.error('Failed to update field:', err);
+      }
     } else {
       onInputChange(e);
     }

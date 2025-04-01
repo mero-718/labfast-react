@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Box,
   Container,
@@ -22,6 +22,7 @@ import { Sidebar } from '../common/Sidebar';
 import { StudentTable } from './StudentTable';
 import { StudentFormDialog } from './StudentFormDialog';
 import { DeleteConfirmationDialog } from './DeleteConfirmationDialog';
+import { useDebounce } from '../../hooks/useDebounce';
 
 const MainContent = styled(Box)(({ theme }) => ({
   flexGrow: 1,
@@ -75,6 +76,7 @@ interface User {
 export const Dashboard = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 300); // 300ms delay
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [addStudentOpen, setAddStudentOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -92,7 +94,7 @@ export const Dashboard = () => {
   const {
     data: users,
     isLoading,
-    error: apiError,
+    error: Error,
     refetch
   } = useGetUsersQuery(undefined, {
     refetchOnMountOrArgChange: true,
@@ -107,28 +109,26 @@ export const Dashboard = () => {
     refetch();
   }, [refetch]);
 
-  useEffect(() => {
-    if (users) {
-      console.log('Fetched Users Data:', users);
-      if (users.length > 0) {
-        console.log('First User Data Structure:', {
-          id: users[0].id,
-          username: users[0].username,
-          email: users[0].email,
-          phone: users[0].phone,
-          enrollNumber: users[0].enrollNumber,
-          dateOfAdmission: users[0].dateOfAdmission,
-          allFields: users[0]
-        });
-      }
-    }
-  }, [users]);
+  const filteredUsers = useMemo(() => {
+    if (!users) return [];
+    
+    if (!debouncedSearchTerm) return users;
 
-  const filteredUsers = users?.filter((user) =>
-    Object.values(user).some((value) =>
-      value?.toString().toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  ) || [];
+    const searchLower = debouncedSearchTerm.toLowerCase();
+    return users.filter((user) => {
+      const searchableFields = [
+        user.username,
+        user.email,
+        user.phone,
+        user.enrollNumber,
+        user.dateOfAdmission
+      ].filter(Boolean).map(String);
+
+      return searchableFields.some(field => 
+        field.toLowerCase().includes(searchLower)
+      );
+    });
+  }, [users, debouncedSearchTerm]);
 
   const totalCount = filteredUsers.length;
   const paginatedUsers = filteredUsers.slice(
@@ -266,6 +266,10 @@ export const Dashboard = () => {
     setPage(0);
   };
 
+  const handleUserUpdate = (updatedUser: User) => {
+    setSelectedUser(updatedUser);
+  };
+
   if (isLoading) {
     return (
       <Box sx={{ display: 'flex' }}>
@@ -289,7 +293,7 @@ export const Dashboard = () => {
     );
   }
 
-  if (apiError) {
+  if (Error) {
     return (
       <Box sx={{ display: 'flex' }}>
         <ToastContainer
@@ -343,7 +347,7 @@ export const Dashboard = () => {
 
             <HeaderContainer>
               <SearchField
-                placeholder="Search..."
+                placeholder="Search by name, email, phone, or enrollment number..."
                 size="small"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -405,6 +409,7 @@ export const Dashboard = () => {
         selectedUser={selectedUser}
         newStudent={newStudent}
         onInputChange={handleInputChange}
+        onUserUpdate={handleUserUpdate}
         isSubmitting={isAdding || isUpdating}
       />
 

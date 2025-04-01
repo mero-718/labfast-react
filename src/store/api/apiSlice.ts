@@ -67,7 +67,6 @@ export const apiSlice = createApi({
         }),
       }),
       transformErrorResponse: (response) => {
-        // Handle non-JSON error responses
         if (response.status === 401) {
           return {
             status: 401,
@@ -83,33 +82,6 @@ export const apiSlice = createApi({
         method: 'POST',
         body: userData,
       }),
-    }),
-
-    // Data endpoints
-    getDataList: builder.query<DataItem[], void>({
-      query: () => ({
-        url: 'products',
-        method: 'GET',
-      }),
-      providesTags: ['Data'],
-      keepUnusedDataFor: 300,
-    }),
-
-    getDataDetail: builder.query<DataItem, number>({
-      query: (id) => ({
-        url: `products/${id}`,
-        method: 'GET',
-      }),
-      providesTags: (result, error, id) => [{ type: 'Data', id }],
-      keepUnusedDataFor: 300,
-    }),
-
-    deleteData: builder.mutation<void, number>({
-      query: (id) => ({
-        url: `products/${id}`,
-        method: 'DELETE',
-      }),
-      invalidatesTags: ['Data'],
     }),
 
     // User endpoints
@@ -146,9 +118,6 @@ export const apiSlice = createApi({
 export const {
   useLoginMutation,
   useRegisterMutation,
-  useGetDataListQuery,
-  useGetDataDetailQuery,
-  useDeleteDataMutation,
   useGetUsersQuery,
   useGetUserQuery,
   useUpdateUserMutation,
