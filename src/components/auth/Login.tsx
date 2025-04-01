@@ -58,7 +58,7 @@ export const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const { handleLogin } = useAuth();
-  const [login, { isLoading, error }] = useLoginMutation();
+  const [, { isLoading, error }] = useLoginMutation();
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

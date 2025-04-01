@@ -92,7 +92,7 @@ export const apiSlice = createApi({
 
     getUser: builder.query<User, number>({
       query: (id) => `users/${id}`,
-      providesTags: (result, error, id) => [{ type: 'Users', id }],
+      providesTags: (_result, _error, id) => [{ type: 'Users', id }],
     }),
 
     updateUser: builder.mutation<User, Partial<User> & { id: number }>({
@@ -101,7 +101,7 @@ export const apiSlice = createApi({
         method: 'PUT',
         body: user,
       }),
-      invalidatesTags: (result, error, { id }) => [{ type: 'Users', id }],
+      invalidatesTags: (_result, _error, { id }) => [{ type: 'Users', id }],
     }),
 
     deleteUser: builder.mutation<void, number>({

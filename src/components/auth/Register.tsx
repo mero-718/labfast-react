@@ -60,7 +60,7 @@ export const Register = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const { handleRegister } = useAuth();
-  const [register, { isLoading, error }] = useRegisterMutation();
+  const [, { isLoading, error }] = useRegisterMutation();
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

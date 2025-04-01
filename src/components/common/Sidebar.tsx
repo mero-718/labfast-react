@@ -128,7 +128,7 @@ interface SidebarProps {
   onClose?: () => void;
 }
 
-export const Sidebar = ({ selected = false, onStudentsClick, onClose }: SidebarProps) => {
+export const Sidebar = ({ selected = false, onStudentsClick, }: SidebarProps) => {
   const navigate = useNavigate();
   const { handleLogout, user } = useAuth();
   const theme = useTheme();
