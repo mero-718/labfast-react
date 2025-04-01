@@ -4,6 +4,7 @@ import { LoginPage } from '@/pages/auth/LoginPage';
 import { RegisterPage } from '@/pages/auth/RegisterPage';
 import { DashboardPage } from '@/pages/dashboard/DashboardPage';
 import { ProfilePage } from '@/pages/profile/ProfilePage';
+import { ChatPage } from '@/pages/chat/ChatPage';
 import { NotFound } from '@/pages/NotFound';
 import { ProtectedRoute } from '@/components/common/ProtectedRoute';
 import { Navigate } from 'react-router-dom';
@@ -26,6 +27,12 @@ export const routes: RouteObject[] = [
     path: '/dashboard',
     element: React.createElement(ProtectedRoute, null,
       React.createElement(DashboardPage)
+    ),
+  },
+  {
+    path: '/chat',
+    element: React.createElement(ProtectedRoute, null,
+      React.createElement(ChatPage)
     ),
   },
   {

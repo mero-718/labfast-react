@@ -15,8 +15,9 @@ import {
   ExitToApp as LogoutIcon,
   People as PeopleIcon,
   Menu as MenuIcon,
+  Chat as ChatIcon,
 } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useState } from 'react';
 
@@ -76,7 +77,8 @@ const TitleContainer = styled(Box)({
 });
 
 const StyledListItemButton = styled(ListItemButton)({
-  margin: '0 8px',
+  marginTop: '4px',
+  marginBottom: '4px',
   borderRadius: '4px',
   color: '#000000',
   '&.Mui-selected': {
@@ -123,13 +125,12 @@ const MobileMenuButton = styled(IconButton)(({ theme }) => ({
 }));
 
 interface SidebarProps {
-  selected?: boolean;
-  onStudentsClick?: () => void;
   onClose?: () => void;
 }
 
-export const Sidebar = ({ selected = false, onStudentsClick, }: SidebarProps) => {
+export const Sidebar = ({ onClose }: SidebarProps) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { handleLogout, user } = useAuth();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -139,15 +140,15 @@ export const Sidebar = ({ selected = false, onStudentsClick, }: SidebarProps) =>
     setMobileOpen(!mobileOpen);
   };
 
-  const handleNavigation = () => {
-    if (onStudentsClick) {
-      onStudentsClick();
-    } else {
-      navigate('/dashboard');
-    }
+  const handleNavigation = (path: string) => {
+    navigate(path);
     if (isMobile) {
       setMobileOpen(false);
     }
+  };
+
+  const isActive = (path: string) => {
+    return location.pathname === path;
   };
 
   const drawerContent = (
@@ -173,8 +174,8 @@ export const Sidebar = ({ selected = false, onStudentsClick, }: SidebarProps) =>
       </ProfileSection>
       <List>
         <StyledListItemButton 
-          selected={selected} 
-          onClick={handleNavigation}
+          selected={isActive('/dashboard')} 
+          onClick={() => handleNavigation('/dashboard')}
         >
           <ListItemText
             primary="Students"
@@ -185,7 +186,22 @@ export const Sidebar = ({ selected = false, onStudentsClick, }: SidebarProps) =>
               }
             }}
           />
-          <PeopleIcon sx={{ mr: 1, color: selected ? 'white' : '#FEAF00' }} />
+          <PeopleIcon sx={{ mr: 1, color: isActive('/dashboard') ? 'white' : '#FEAF00' }} />
+        </StyledListItemButton>
+        <StyledListItemButton 
+          selected={isActive('/chat')} 
+          onClick={() => handleNavigation('/chat')}
+        >
+          <ListItemText
+            primary="Chat"
+            sx={{
+              textAlign: 'center',
+              '& .MuiTypography-root': {
+                fontWeight: 'medium'
+              }
+            }}
+          />
+          <ChatIcon sx={{ mr: 1, color: isActive('/chat') ? 'white' : '#FEAF00' }} />
         </StyledListItemButton>
       </List>
       <LogoutContainer>
