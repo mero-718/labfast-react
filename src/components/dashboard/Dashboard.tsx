@@ -238,6 +238,7 @@ const Dashboard = () => {
         setSelectedUser(null);
         setViewMode(false);
         toast.success('Student updated successfully!', toastConfig);
+        refetch();
       } else {
         // Create new user
         if (!newStudent.email || !newStudent.password || !newStudent.username) {
@@ -250,7 +251,7 @@ const Dashboard = () => {
         setError('');
         toast.success('Student created successfully!', toastConfig);
         // Refetch the users list to update the table
-        // refetch();
+        refetch();
       }
     } catch (err: any) {
       const errorMessage = err.data?.detail || (viewMode ? 'Failed to update student. Please try again.' : 'Failed to create student. Please try again.');
