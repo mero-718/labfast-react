@@ -193,7 +193,7 @@ export const StudentTable = ({
                     >
                       {user.username?.charAt(0)}
                     </Avatar>
-                    <label htmlFor={`photo-upload-${user.id}`}>
+                    {/* <label htmlFor={`photo-upload-${user.id}`}>
                       <input
                         id={`photo-upload-${user.id}`}
                         type="file"
@@ -217,7 +217,7 @@ export const StudentTable = ({
                       >
                         <PhotoCameraIcon fontSize="small" />
                       </IconButton>
-                    </label>
+                    </label> */}
                   </Box>
                 </Box>
               </TableCell>
