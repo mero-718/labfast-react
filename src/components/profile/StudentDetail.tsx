@@ -51,7 +51,7 @@ const StudentDetail = () => {
   if (isLoading) {
     return (
       <Box sx={{ display: 'flex' }}>
-        <Sidebar selected />
+        <Sidebar />
         <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh" width="100%">
           <CircularProgress />
         </Box>
@@ -62,7 +62,7 @@ const StudentDetail = () => {
   if (error || !studentData) {
     return (
       <Box sx={{ display: 'flex' }}>
-        <Sidebar selected />
+        <Sidebar />
         <MainContent>
           <Container>
             <Box my={4}>
@@ -85,7 +85,7 @@ const StudentDetail = () => {
 
   return (
     <Box sx={{ display: 'flex' }}>
-      <Sidebar selected />
+      <Sidebar />
       <MainContent>
         <Container maxWidth="xl">
           <Box mb={4}>

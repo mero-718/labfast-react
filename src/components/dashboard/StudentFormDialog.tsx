@@ -168,7 +168,7 @@ export const StudentFormDialog = ({
             fullWidth
             label="Phone"
             name="phone"
-            value={selectedUser?.phone || ''}
+            value={selectedUser?.phone || '---'}
             onChange={handleInputChange}
             disabled={false}
           />

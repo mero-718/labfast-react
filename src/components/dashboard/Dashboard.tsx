@@ -75,6 +75,16 @@ const SearchField = styled(TextField)({
   },
 });
 
+const toastConfig = {
+  position: "top-right" as const,
+  autoClose: 3000,
+  hideProgressBar: false,
+  closeOnClick: true,
+  pauseOnHover: true,
+  draggable: true,
+  theme: "light" as const,
+};
+
 interface User {
   id: number;
   username: string;
@@ -82,6 +92,7 @@ interface User {
   phone?: string | null;
   enrollNumber?: string | null;
   dateOfAdmission?: string | null;
+  photo_url?: string | null;
 }
 
 const Dashboard = () => {
@@ -103,13 +114,15 @@ const Dashboard = () => {
   const [viewMode, setViewMode] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(7);
+  const [order, setOrder] = useState<'asc' | 'desc'>('asc');
+  const [orderBy, setOrderBy] = useState<keyof User | ''>('');
 
   const {
     data: users,
     isLoading,
     error: Error,
     refetch
-  } = useGetUsersQuery(undefined, {
+  } = useGetUsersQuery({ skip: 0, limit: 100 }, {
     refetchOnMountOrArgChange: true,
     refetchOnFocus: true,
   });
@@ -132,9 +145,6 @@ const Dashboard = () => {
       const searchableFields = [
         user.username,
         user.email,
-        user.phone,
-        user.enrollNumber,
-        user.dateOfAdmission
       ].filter(Boolean).map(String);
 
       return searchableFields.some(field => 
@@ -144,10 +154,49 @@ const Dashboard = () => {
   }, [users, debouncedSearchTerm]);
 
   const totalCount = filteredUsers.length;
-  const paginatedUsers = filteredUsers.slice(
-    page * rowsPerPage,
-    page * rowsPerPage + rowsPerPage
-  );
+
+  const sortUsers = (users: User[]) => {
+    if (!orderBy) return users;
+
+    return [...users].sort((a, b) => {
+      const aValue = a[orderBy];
+      const bValue = b[orderBy];
+
+      if (aValue === null || aValue === undefined) return 1;
+      if (bValue === null || bValue === undefined) return -1;
+
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return order === 'asc'
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue);
+      }
+
+      // Handle date strings
+      if (orderBy === 'dateOfAdmission') {
+        const aDate = new Date(aValue as string);
+        const bDate = new Date(bValue as string);
+        return order === 'asc'
+          ? aDate.getTime() - bDate.getTime()
+          : bDate.getTime() - aDate.getTime();
+      }
+
+      // Handle numbers
+      return order === 'asc'
+        ? (aValue as number) - (bValue as number)
+        : (bValue as number) - (aValue as number);
+    });
+  };
+
+  // Apply sorting to filtered users
+  const sortedUsers = useMemo(() => sortUsers(filteredUsers), [filteredUsers, order, orderBy]);
+
+  // Apply pagination to sorted users
+  const paginatedUsers = useMemo(() => {
+    return sortedUsers.slice(
+      page * rowsPerPage,
+      page * rowsPerPage + rowsPerPage
+    );
+  }, [sortedUsers, page, rowsPerPage]);
 
   const onDeleteClick = (user: User) => {
     setSelectedId(user.id);
@@ -161,28 +210,11 @@ const Dashboard = () => {
         await deleteUser(selectedId).unwrap();
         setDeleteDialogOpen(false);
         setSelectedId(null);
-        toast.success('Student deleted successfully!', {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
-        });
+        toast.success('Student deleted successfully!', toastConfig);
+        refetch();
       } catch (err) {
         console.error('Failed to delete user:', err);
-        toast.error('Failed to delete student. Please try again.', {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
-        });
+        toast.error('Failed to delete student. Please try again.', toastConfig);
       }
     }
   };
@@ -197,25 +229,15 @@ const Dashboard = () => {
         }
         await updateUser({
           id: selectedUser.id,
-          username: selectedUser.username,
-          email: selectedUser.email,
-          phone: selectedUser.phone || '',
-          enrollNumber: selectedUser.enrollNumber || '',
-          dateOfAdmission: selectedUser.dateOfAdmission || '',
+          data: {
+            username: selectedUser.username,
+            email: selectedUser.email,
+          }
         }).unwrap();
         setAddStudentOpen(false);
         setSelectedUser(null);
         setViewMode(false);
-        toast.success('Student updated successfully!', {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
-        });
+        toast.success('Student updated successfully!', toastConfig);
       } else {
         // Create new user
         if (!newStudent.email || !newStudent.password || !newStudent.username) {
@@ -226,29 +248,14 @@ const Dashboard = () => {
         setAddStudentOpen(false);
         setNewStudent({ email: '', password: '', username: '' });
         setError('');
-        toast.success('Student created successfully!', {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
-        });
+        toast.success('Student created successfully!', toastConfig);
+        // Refetch the users list to update the table
+        // refetch();
       }
-    } catch (err) {
-      setError(viewMode ? 'Failed to update student. Please try again.' : 'Failed to add student. Please try again.');
-      toast.error(viewMode ? 'Failed to update student. Please try again.' : 'Failed to create student. Please try again.', {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-      });
+    } catch (err: any) {
+      const errorMessage = err.data?.detail || (viewMode ? 'Failed to update student. Please try again.' : 'Failed to create student. Please try again.');
+      setError(errorMessage);
+      toast.error(errorMessage, toastConfig);
     }
   };
 
@@ -283,6 +290,12 @@ const Dashboard = () => {
     setSelectedUser(updatedUser);
   };
 
+  const handleRequestSort = (property: keyof User) => {
+    const isAsc = orderBy === property && order === 'asc';
+    setOrder(isAsc ? 'desc' : 'asc');
+    setOrderBy(property);
+  };
+
   if (isLoading) {
     return (
       <Box sx={{ display: 'flex' }}>
@@ -298,7 +311,7 @@ const Dashboard = () => {
           pauseOnHover
           theme="light"
         />
-        <Sidebar selected />
+        <Sidebar />
         <MainContent sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
           <CircularProgress />
         </MainContent>
@@ -321,7 +334,7 @@ const Dashboard = () => {
           pauseOnHover
           theme="light"
         />
-        <Sidebar selected />
+        <Sidebar />
         <MainContent>
           <Alert severity="error" sx={{ mb: 2 }}>
             Error loading users. Please try again later.
@@ -348,7 +361,7 @@ const Dashboard = () => {
         pauseOnHover
         theme="light"
       />
-      <Sidebar selected />
+      <Sidebar />
       <MainContent>
         <Container maxWidth="xl" sx={{ padding: 0 }}>
           <Paper sx={{ p: 3, borderRadius: 2, mt: isMobile ? 0 : 3 }}>
@@ -403,6 +416,9 @@ const Dashboard = () => {
               onEditClick={handleEditClick}
               onDeleteClick={onDeleteClick}
               isDeleting={isDeleting}
+              order={order}
+              orderBy={orderBy}
+              onRequestSort={handleRequestSort}
             />
           </Paper>
         </Container>

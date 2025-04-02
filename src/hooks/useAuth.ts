@@ -4,6 +4,17 @@ import { useNavigate } from 'react-router-dom';
 import { setCredentials, logout, initializeAuth } from '@/store/slices/authSlice';
 import { useLoginMutation, useRegisterMutation, LoginRequest } from '@/store/api/apiSlice';
 import { RootState } from '@/store/store';
+import { toast } from 'react-toastify';
+
+const toastConfig = {
+  position: "top-right" as const,
+  autoClose: 3000,
+  hideProgressBar: false,
+  closeOnClick: true,
+  pauseOnHover: true,
+  draggable: true,
+  theme: "light" as const,
+};
 
 export const useAuth = () => {
   const dispatch = useDispatch();
@@ -30,11 +41,12 @@ export const useAuth = () => {
             role: 'Admin'
           }
         }));
+        toast.success('Login successful!', toastConfig);
         navigate('/dashboard');
       } catch (error: any) {
-        // Handle the error message from the API
-        const errorMessage = error.data || 'Login failed. Please try again.';
-        throw new Error(errorMessage);
+        const errorMessage = error.data?.detail || 'Login failed. Please try again.';
+        toast.error(errorMessage, toastConfig);
+        throw error;
       }
     },
     [dispatch, login, navigate]
@@ -52,10 +64,12 @@ export const useAuth = () => {
             role: 'Admin'
           }
         }));
-        navigate('/dashboard');
+        toast.success('Registration successful!', toastConfig);
+        navigate('/login');
       } catch (error: any) {
-        const errorMessage = error.data || 'Registration failed. Please try again.';
-        throw new Error(errorMessage);
+        const errorMessage = error.data?.detail || 'Registration failed. Please try again.';
+        toast.error(errorMessage, toastConfig);
+        throw error;
       }
     },
     [dispatch, register, navigate]

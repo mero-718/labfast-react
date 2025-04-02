@@ -14,11 +14,15 @@ import {
   useTheme,
   useMediaQuery,
   Typography,
+  TableSortLabel,
 } from '@mui/material';
 import {
   Delete as DeleteIcon,
   Edit as EditIcon,
+  PhotoCamera as PhotoCameraIcon,
 } from '@mui/icons-material';
+import { useUploadUserPhotoMutation } from '@/store/api/apiSlice';
+import { toast } from 'react-toastify';
 
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
   '&:nth-of-type(odd)': {
@@ -49,7 +53,11 @@ interface User {
   phone?: string | null;
   enrollNumber?: string | null;
   dateOfAdmission?: string | null;
+  photo_url?: string | null;
 }
+
+type Order = 'asc' | 'desc';
+type OrderBy = keyof User | '';
 
 interface StudentTableProps {
   users: User[];
@@ -62,6 +70,9 @@ interface StudentTableProps {
   onEditClick: (user: User) => void;
   onDeleteClick: (user: User) => void;
   isDeleting: boolean;
+  order: Order;
+  orderBy: OrderBy;
+  onRequestSort: (property: keyof User) => void;
 }
 
 export const StudentTable = ({
@@ -75,9 +86,42 @@ export const StudentTable = ({
   onEditClick,
   onDeleteClick,
   isDeleting,
+  order,
+  orderBy,
+  onRequestSort,
 }: StudentTableProps) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const [uploadPhoto] = useUploadUserPhotoMutation();
+
+  const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>, userId: number) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Check file size (5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('File size should be less than 5MB');
+      return;
+    }
+
+    // Check file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Only JPG, PNG and GIF files are allowed');
+      return;
+    }
+
+    try {
+      await uploadPhoto({ userId, file }).unwrap();
+      toast.success('Photo uploaded successfully');
+    } catch (error: any) {
+      toast.error(error.data?.detail || 'Failed to upload photo');
+    }
+  };
+
+  const createSortHandler = (property: keyof User) => () => {
+    onRequestSort(property);
+  };
 
   return (
     <TableContainer component={Paper}>
@@ -85,11 +129,51 @@ export const StudentTable = ({
         <TableHead>
           <TableRow>
             <TableCell></TableCell>
-            <TableCell>Name</TableCell>
-            <ResponsiveTableCell>Email</ResponsiveTableCell>
-            <ResponsiveTableCell>Phone</ResponsiveTableCell>
-            <ResponsiveTableCell>Enroll Number</ResponsiveTableCell>
-            <ResponsiveTableCell>Date of admission</ResponsiveTableCell>
+            <TableCell>
+              <TableSortLabel
+                active={orderBy === 'username'}
+                direction={orderBy === 'username' ? order : 'asc'}
+                onClick={createSortHandler('username')}
+              >
+                Name
+              </TableSortLabel>
+            </TableCell>
+            <ResponsiveTableCell>
+              <TableSortLabel
+                active={orderBy === 'email'}
+                direction={orderBy === 'email' ? order : 'asc'}
+                onClick={createSortHandler('email')}
+              >
+                Email
+              </TableSortLabel>
+            </ResponsiveTableCell>
+            <ResponsiveTableCell>
+              <TableSortLabel
+                active={orderBy === 'phone'}
+                direction={orderBy === 'phone' ? order : 'asc'}
+                onClick={createSortHandler('phone')}
+              >
+                Phone
+              </TableSortLabel>
+            </ResponsiveTableCell>
+            <ResponsiveTableCell>
+              <TableSortLabel
+                active={orderBy === 'enrollNumber'}
+                direction={orderBy === 'enrollNumber' ? order : 'asc'}
+                onClick={createSortHandler('enrollNumber')}
+              >
+                Enroll Number
+              </TableSortLabel>
+            </ResponsiveTableCell>
+            <ResponsiveTableCell>
+              <TableSortLabel
+                active={orderBy === 'dateOfAdmission'}
+                direction={orderBy === 'dateOfAdmission' ? order : 'asc'}
+                onClick={createSortHandler('dateOfAdmission')}
+              >
+                Date of admission
+              </TableSortLabel>
+            </ResponsiveTableCell>
             <TableCell align="right">Actions</TableCell>
           </TableRow>
         </TableHead>
@@ -101,14 +185,45 @@ export const StudentTable = ({
             >
               <TableCell>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <Avatar src="/avatar/man.png" alt={user.username}>
-                    {user.username?.charAt(0)}
-                  </Avatar>
+                  <Box sx={{ position: 'relative' }}>
+                    <Avatar 
+                      src={user.photo_url ? `http://localhost:8000${user.photo_url}` : "/avatar/man.png"} 
+                      alt={user.username}
+                      sx={{ width: 40, height: 40 }}
+                    >
+                      {user.username?.charAt(0)}
+                    </Avatar>
+                    <label htmlFor={`photo-upload-${user.id}`}>
+                      <input
+                        id={`photo-upload-${user.id}`}
+                        type="file"
+                        accept="image/*"
+                        style={{ display: 'none' }}
+                        onChange={(e) => handlePhotoUpload(e, user.id)}
+                      />
+                      <IconButton
+                        size="small"
+                        sx={{
+                          position: 'absolute',
+                          bottom: 0,
+                          right: 0,
+                          backgroundColor: 'primary.main',
+                          color: 'white',
+                          '&:hover': {
+                            backgroundColor: 'primary.dark',
+                          },
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <PhotoCameraIcon fontSize="small" />
+                      </IconButton>
+                    </label>
+                  </Box>
                 </Box>
               </TableCell>
               <TableCell>{user.username}</TableCell>
               <ResponsiveTableCell>{user.email}</ResponsiveTableCell>
-              <ResponsiveTableCell>{user.phone || '-'}</ResponsiveTableCell>
+              <ResponsiveTableCell>{user.phone || '---'}</ResponsiveTableCell>
               <ResponsiveTableCell>
                 {user.enrollNumber || `STU${String(user.id).padStart(4, '0')}`}
               </ResponsiveTableCell>

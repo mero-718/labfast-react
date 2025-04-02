@@ -13,19 +13,17 @@ export interface AuthResponse {
   token: string;
 }
 
+export interface User {
+  id: number;
+  email: string;
+  username: string;
+  is_active: boolean;
+  created_at: string;
+}
+
 export interface LoginRequest {
   username: string;
   password: string;
-}
-
-export interface User {
-  id: number;
-  username: string;
-  email: string;
-  phone: string;
-  enrollNumber: string;
-  dateOfAdmission: string;
-  avatar: string;
 }
 
 export interface RegisterRequest {
@@ -39,10 +37,10 @@ export const apiSlice = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({
     baseUrl: BACKEND_URL,
-    prepareHeaders: (headers) => {
-      const token = localStorage.getItem('token');
+    prepareHeaders: (headers, { getState }) => {
+      const token = (getState() as any).auth.token;
       if (token) {
-        headers.set('Authorization', `Bearer ${token}`);
+        headers.set('authorization', `Bearer ${token}`);
       }
       headers.set('Content-Type', 'application/json');
       return headers;
@@ -51,7 +49,7 @@ export const apiSlice = createApi({
       return response.status >= 200 && response.status < 300;
     },
   }),
-  tagTypes: ['Data', 'Users'],
+  tagTypes: ['Users'],
   endpoints: (builder) => ({
     // Auth endpoints
     login: builder.mutation<AuthResponse, LoginRequest>({
@@ -78,37 +76,54 @@ export const apiSlice = createApi({
     }),
     register: builder.mutation<AuthResponse, RegisterRequest>({
       query: (userData) => ({
-        url: 'users',
+        url: '/users/',
         method: 'POST',
         body: userData,
       }),
+      invalidatesTags: ['Users'],
     }),
 
     // User endpoints
-    getUsers: builder.query<User[], void>({
-      query: () => 'users',
+    getUsers: builder.query<User[], { skip?: number; limit?: number }>({
+      query: ({ skip = 0, limit = 100 } = {}) => ({
+        url: '/users/',
+        params: { skip, limit },
+      }),
       providesTags: ['Users'],
     }),
 
     getUser: builder.query<User, number>({
-      query: (id) => `users/${id}`,
+      query: (id) => `/users/${id}`,
       providesTags: (_result, _error, id) => [{ type: 'Users', id }],
     }),
 
-    updateUser: builder.mutation<User, Partial<User> & { id: number }>({
-      query: ({ id, ...user }) => ({
-        url: `users/${id}`,
+    updateUser: builder.mutation<User, { id: number; data: Partial<User> }>({
+      query: ({ id, data }) => ({
+        url: `/users/${id}`,
         method: 'PUT',
-        body: user,
+        body: data,
       }),
       invalidatesTags: (_result, _error, { id }) => [{ type: 'Users', id }],
     }),
 
     deleteUser: builder.mutation<void, number>({
       query: (id) => ({
-        url: `users/${id}`,
+        url: `/users/${id}`,
         method: 'DELETE',
       }),
+      invalidatesTags: ['Users'],
+    }),
+
+    uploadUserPhoto: builder.mutation<User, { userId: number; file: File }>({
+      query: ({ userId, file }) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        return {
+          url: `/users/${userId}/photo`,
+          method: 'POST',
+          body: formData,
+        };
+      },
       invalidatesTags: ['Users'],
     }),
   }),
@@ -122,4 +137,5 @@ export const {
   useGetUserQuery,
   useUpdateUserMutation,
   useDeleteUserMutation,
+  useUploadUserPhotoMutation,
 } = apiSlice; 

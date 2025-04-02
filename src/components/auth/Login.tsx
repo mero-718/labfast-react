@@ -16,6 +16,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLoginMutation } from '@/store/api/apiSlice';
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
 import { SerializedError } from '@reduxjs/toolkit';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 // Styled components
 const GradientBackground = styled(Box)({
@@ -76,8 +78,8 @@ export const Login = () => {
 
     try {
       await handleLogin(credentials);
-    } catch (err) {
-      // Error is handled by RTK Query
+    } catch (err: any) {
+      console.log('err',err);
     }
   };
 
@@ -90,6 +92,19 @@ export const Login = () => {
 
   return (
     <GradientBackground>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+        limit={3}
+      />
       <Container maxWidth="sm">
         <StyledPaper>
           <Box

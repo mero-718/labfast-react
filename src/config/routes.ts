@@ -19,7 +19,7 @@ export const routes: RouteObject[] = [
   },
   {
     path: '/register',
-    element: React.createElement(ProtectedRoute, { redirectTo: '/dashboard' },
+    element: React.createElement(ProtectedRoute, { redirectTo: '/login' },
       React.createElement(RegisterPage)
     ),
   },

@@ -16,6 +16,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { useRegisterMutation } from '@/store/api/apiSlice';
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
 import { SerializedError } from '@reduxjs/toolkit';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 // Styled components (reusing from Login)
 const GradientBackground = styled(Box)({
@@ -65,6 +67,10 @@ export const Register = () => {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!username.trim() || !email.trim() || !password.trim() || !confirmPassword.trim()) {
+      return;
+    }
+
     if (password !== confirmPassword) {
       return;
     }
@@ -72,7 +78,7 @@ export const Register = () => {
     try {
       await handleRegister(email, password, username);
     } catch (err) {
-      // Error is handled by RTK Query
+      console.log('err',err);
     }
   };
 
@@ -85,6 +91,18 @@ export const Register = () => {
 
   return (
     <GradientBackground>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
       <Container maxWidth="sm">
         <StyledPaper>
           <Box
